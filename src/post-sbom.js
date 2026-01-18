@@ -68,22 +68,10 @@ async function getReleaseTag() {
   }
 }
 
-/**
- * GeneratreleaseTag = await getReleaseTag()
-    const extReleaseId = generateUUID()
-
-    core.info(`Git commit: ${commitSha}`)
-    core.info(`Git branch: ${refBranch}`)
-    core.info(`Release tag: ${releaseTag}`)
-    core.info(`Release ID: ${extReleaseId}`)
-
-    const curlCommand = `curl -X POST "${endpointUrl}" \
-      -H "Authorization: Bearer ${srmToken}" \
-      -H "ngrok-skip-browser-warning: true" \
-      -F "file=@${sbomPath}" \
-      -F "commit_sha=${commitSha}" \
-      -F "ref_branch=${refBranch}" \
-      -F "release_tag=${releaseTag API endpoint URL
+/** * POST SBOM to specified endpoint
+ *
+ * @param {string} sbomPath - Path to the SBOM file
+ * @param {string} endpointUrl - Endpoint URL to post the SBOM
  * @param {string} srmToken - Authentication token
  * @returns {Promise<string>} HTTP status code
  */
@@ -94,7 +82,7 @@ export async function postSbom(sbomPath, endpointUrl, srmToken) {
     // Get git information
     const commitSha = await getCommitSha()
     const refBranch = await getRefBranch()
-    const extReleaseId = generateUUID()
+    const extReleaseId = getReleaseTag()
 
     core.info(`Git commit: ${commitSha}`)
     core.info(`Git branch: ${refBranch}`)
