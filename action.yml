@@ -16,10 +16,6 @@ inputs:
     description: URL endpoint to POST SBOM
     required: false
     default: 'https://placeholder.example.com/api/sbom'
-  trivy-version:
-    description: Version of Trivy to use
-    required: false
-    default: 'latest'
   sbom-artifact:
     description: Upload SBOM as workflow artifact
     required: false
