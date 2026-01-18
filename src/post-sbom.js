@@ -47,18 +47,43 @@ async function getRefBranch() {
 }
 
 /**
- * Generate UUID for ext_release_id
- * @returns {string} UUID
+ * Get current git tag
+ * @returns {Promise<string>} Tag name or 'NA' if not available
  */
-function generateUUID() {
-  return crypto.randomUUID()
+async function getReleaseTag() {
+  try {
+    let tag = ''
+    await exec.exec('git', ['describe', '--tags', '--exact-match'], {
+      listeners: {
+        stdout: (data) => {
+          tag += data.toString().trim()
+        }
+      },
+      silent: true
+    })
+    return tag || 'NA'
+  } catch (error) {
+    core.warning('Unable to get git tag, using NA')
+    return 'NA'
+  }
 }
 
 /**
- * POST SBOM to endpoint with authentication
- *
- * @param {string} sbomPath - Path to the SBOM file
- * @param {string} endpointUrl - API endpoint URL
+ * GeneratreleaseTag = await getReleaseTag()
+    const extReleaseId = generateUUID()
+
+    core.info(`Git commit: ${commitSha}`)
+    core.info(`Git branch: ${refBranch}`)
+    core.info(`Release tag: ${releaseTag}`)
+    core.info(`Release ID: ${extReleaseId}`)
+
+    const curlCommand = `curl -X POST "${endpointUrl}" \
+      -H "Authorization: Bearer ${srmToken}" \
+      -H "ngrok-skip-browser-warning: true" \
+      -F "file=@${sbomPath}" \
+      -F "commit_sha=${commitSha}" \
+      -F "ref_branch=${refBranch}" \
+      -F "release_tag=${releaseTag API endpoint URL
  * @param {string} srmToken - Authentication token
  * @returns {Promise<string>} HTTP status code
  */

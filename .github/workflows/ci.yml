@@ -58,9 +58,7 @@ jobs:
         uses: ./
         with:
           srm-token: ${{ secrets.SRM_TOKEN }}
-          endpoint-url: 'https://api.example.com/sbom'
           sbom-artifact: true
-
       - name: Print Output
         id: output
         run: echo "${{ steps.test-action.outputs.response-status }}"
