@@ -1,23 +1,36 @@
-name: The name of your action here
-description: Provide a description here
+name: SBOM Generator and Reporter
+description: Generate SBOM using Trivy and POST to endpoint
 author: Your name or organization here
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: shield
+  color: blue
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  srm-token:
+    description: Authentication token for SBOM endpoint
     required: true
-    default: '1000'
+  endpoint-url:
+    description: URL endpoint to POST SBOM
+    required: false
+    default: 'https://placeholder.example.com/api/sbom'
+  trivy-version:
+    description: Version of Trivy to use
+    required: false
+    default: 'latest'
+  sbom-artifact:
+    description: Upload SBOM as workflow artifact
+    required: false
+    default: 'false'
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  sbom-path:
+    description: Path to the generated SBOM file
+  response-status:
+    description: HTTP status code from POST request
 
 runs:
   using: node24

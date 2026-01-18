@@ -1,4 +1,4 @@
-# Create a GitHub Action Using JavaScript
+# SBOM Generator and Reporter GitHub Action
 
 [![GitHub Super-Linter](https://github.com/actions/javascript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/actions/javascript-action/actions/workflows/linter.yml)
 [![CI](https://github.com/actions/javascript-action/actions/workflows/ci.yml/badge.svg)](https://github.com/actions/javascript-action/actions/workflows/ci.yml)
@@ -6,52 +6,92 @@
 [![CodeQL](https://github.com/actions/javascript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/javascript-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-Use this template to bootstrap the creation of a JavaScript action. :rocket:
+A GitHub Action that generates a Software Bill of Materials (SBOM) using Trivy
+and POSTs it to a specified endpoint with authentication.
 
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
+## Features
 
-If you are new, there's also a simpler introduction in the
-[Hello world JavaScript action repository](https://github.com/actions/hello-world-javascript-action).
+- 📦 Generates SBOM in CycloneDX format using Trivy
+- 🚀 Automatically POSTs SBOM to your endpoint
+- 🔐 Supports authentication via bearer token
+- 📎 Optionally uploads SBOM as workflow artifact
+- ✅ Outputs SBOM path and response status for further workflow steps
 
-## Create Your Own Action
+## Usage
 
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
+Add this action to your workflow:
 
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
+```yaml
+name: Generate and Report SBOM
 
-> [!IMPORTANT]
->
-> Make sure to remove or update the [`CODEOWNERS`](./CODEOWNERS) file! For
-> details on how to use this file, see
-> [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-## Initial Setup
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-After you've cloned the repository to your local machine or codespace, you'll
-need to perform some initial setup steps before you can develop your action.
+      - name: Generate and Report SBOM
+        uses: your-username/hummingbird-github-action@v1
+        with:
+          srm-token: ${{ secrets.SRM_TOKEN }}
+          sbom-artifact: true
+          endpoint-url: 'https://your-api.example.com/api/sbom'
+```
 
-> [!NOTE]
->
-> You'll need to have a reasonably modern version of
-> [Node.js](https://nodejs.org) handy (20.x or later should work!). If you are
-> using a version manager like [`nodenv`](https://github.com/nodenv/nodenv) or
-> [`fnm`](https://github.com/Schniz/fnm), this template has a `.node-version`
-> file at the root of the repository that can be used to automatically switch to
-> the correct version when you `cd` into the repository. Additionally, this
-> `.node-version` file is used by GitHub Actions in any `actions/setup-node`
-> actions.
+## Inputs
 
-1. :hammer_and_wrench: Install the dependencies
+| Input           | Description                            | Required | Default                                    |
+| --------------- | -------------------------------------- | -------- | ------------------------------------------ |
+| `srm-token`     | Authentication token for SBOM endpoint | Yes      | -                                          |
+| `endpoint-url`  | URL endpoint to POST SBOM              | No       | `https://placeholder.example.com/api/sbom` |
+| `trivy-version` | Version of Trivy to use                | No       | `latest`                                   |
 
-   ```bash
-   npm install
-   ```
+## Outputs
+
+| Output            | Description                        |
+| ----------------- | ---------------------------------- |
+| `sbom-path`       | Path to the generated SBOM file    |
+| `response-status` | HTTP status code from POST request |
+
+## Setup
+
+1. Add the `SRM_TOKEN` secret to your repository:
+   - Go to Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `SRM_TOKEN`
+   - Value: Your authentication token
+
+2. (Optional) Customize the endpoint URL in your workflow
+
+## Example with Outputs
+
+```yaml
+- name: Generate and Report SBOM
+  id: sbom
+  uses: your-username/hummingbird-github-action@v1
+  with:
+    srm-token: ${{ secrets.SRM_TOKEN }}
+    endpoint-url: 'https://your-api.example.com/api/sbom'
+    sbom-artifact: true
+
+- name: Check SBOM status
+  run: |
+    echo "SBOM generated at: ${{ steps.sbom.outputs.sbom-path }}"
+    echo "API response status: ${{ steps.sbom.outputs.response-status }}"
+```
+
+## Development
+
+```bash
+npm install
+```
 
 1. :building_construction: Package the JavaScript for distribution
 
