@@ -82,7 +82,7 @@ export async function postSbom(sbomPath, endpointUrl, srmToken) {
     // Get git information
     const commitSha = await getCommitSha()
     const refBranch = await getRefBranch()
-    const extReleaseId = getReleaseTag()
+    const extReleaseId = await getReleaseTag()
 
     core.info(`Git commit: ${commitSha}`)
     core.info(`Git branch: ${refBranch}`)
