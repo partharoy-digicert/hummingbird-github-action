@@ -12,10 +12,6 @@ inputs:
   srm-token:
     description: Authentication token for SBOM endpoint
     required: true
-  endpoint-url:
-    description: URL endpoint to POST SBOM
-    required: false
-    default: 'https://placeholder.example.com/api/sbom'
   sbom-artifact:
     description: Upload SBOM as workflow artifact
     required: false
