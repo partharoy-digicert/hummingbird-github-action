@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import * as artifact from '@actions/artifact'
+import { DefaultArtifactClient } from '@actions/artifact'
 
 /**
  * Upload SBOM as workflow artifact
@@ -11,7 +11,7 @@ import * as artifact from '@actions/artifact'
 export async function uploadArtifact(sbomPath, artifactName = 'sbom-cdxgen') {
   try {
     core.info('📎 Uploading SBOM as workflow artifact...')
-    const artifactClient = artifact.create()
+    const artifactClient = new DefaultArtifactClient()
     const files = [sbomPath]
     const rootDirectory = process.cwd()
 
@@ -22,8 +22,8 @@ export async function uploadArtifact(sbomPath, artifactName = 'sbom-cdxgen') {
       { continueOnError: false }
     )
 
-    core.info(`✅ Artifact uploaded! ID: ${uploadResult.artifactId}`)
-    return uploadResult.artifactId
+    core.info(`✅ Artifact uploaded! ID: ${uploadResult.id}`)
+    return uploadResult.id
   } catch (error) {
     core.warning(
       `⚠️ Failed to upload artifact: ${error instanceof Error ? error.message : 'Unknown error'}`
