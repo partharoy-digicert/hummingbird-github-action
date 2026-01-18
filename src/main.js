@@ -16,6 +16,7 @@ export async function run() {
     const srmToken = core.getInput('srm-token', { required: true })
     const trivyVersion = core.getInput('trivy-version') || 'latest'
     const sbomArtifact = core.getBooleanInput('sbom-artifact')
+    const trackRelease = core.getBooleanInput('track-release')
     const { endpointUrl, sbomPath, artifactName } = config
 
     core.info('🔍 Setting up Trivy...')
@@ -40,7 +41,7 @@ export async function run() {
     const sbomContent = await readFile(sbomPath, 'utf-8')
 
     // POST SBOM to endpoint (non-blocking)
-    const statusCode = await postSbom(sbomPath, endpointUrl, srmToken)
+    const statusCode = await postSbom(sbomPath, endpointUrl, srmToken, trackRelease)
     core.setOutput('response-status', statusCode)
 
     // Upload SBOM as artifact if requested (non-blocking)

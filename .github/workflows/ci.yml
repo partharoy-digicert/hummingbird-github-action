@@ -59,6 +59,7 @@ jobs:
         with:
           srm-token: ${{ secrets.SRM_TOKEN }}
           sbom-artifact: true
+          track-release: true
       - name: Print Output
         id: output
         run: echo "${{ steps.test-action.outputs.response-status }}"

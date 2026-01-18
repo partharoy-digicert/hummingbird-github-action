@@ -75,14 +75,14 @@ async function getReleaseTag() {
  * @param {string} srmToken - Authentication token
  * @returns {Promise<string>} HTTP status code
  */
-export async function postSbom(sbomPath, endpointUrl, srmToken) {
+export async function postSbom(sbomPath, endpointUrl, srmToken, trackRelease) {
   try {
     core.info(`📤 Posting SBOM to ${endpointUrl}...`)
 
     // Get git information
     const commitSha = await getCommitSha()
     const refBranch = await getRefBranch()
-    const extReleaseId = await getReleaseTag()
+    const extReleaseId = trackRelease ? await getReleaseTag() : 'NA'
 
     core.info(`Git commit: ${commitSha}`)
     core.info(`Git branch: ${refBranch}`)
@@ -95,6 +95,7 @@ export async function postSbom(sbomPath, endpointUrl, srmToken) {
       -F "commit_sha=${commitSha}" \
       -F "ref_branch=${refBranch}" \
       -F "ext_release_id=${extReleaseId}" \
+      -F "track_release=${trackRelease}" \
       -F "sbomType=CDX_JSON" \
       -w "%{http_code}" \
       -s -o /dev/null`
