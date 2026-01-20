@@ -110,22 +110,28 @@ function getOrganizationName() {
 
 /**
  * Get repository node ID from GitHub API
- * @returns {Promise<string>} Repository node ID or 'NA' if not available
+ * @returns {Promise<object>} Repository data with id and node_id
  */
-async function getRepositoryNodeId() {
+async function getRepositoryData() {
   try {
     const repoFullName = process.env.GITHUB_REPOSITORY
     const token = process.env.GITHUB_TOKEN
 
-    if (!repoFullName || !token) {
-      core.warning('GITHUB_REPOSITORY or GITHUB_TOKEN not available')
-      return 'NA'
+    if (!repoFullName) {
+      core.warning('GITHUB_REPOSITORY not available')
+      return { id: 'NA', node_id: 'NA' }
     }
 
     let output = ''
-    const curlCommand = `curl -s -H "Authorization: Bearer ${token}" \
-      -H "Accept: application/vnd.github.v3+json" \
-      https://api.github.com/repos/${repoFullName}`
+    // Use github.token if GITHUB_TOKEN is not available
+    const authToken = token || process.env.ACTIONS_RUNTIME_TOKEN
+
+    const curlCommand = authToken
+      ? `curl -s -H "Authorization: Bearer ${authToken}" \
+         -H "Accept: application/vnd.github.v3+json" \
+         https://api.github.com/repos/${repoFullName}`
+      : `curl -s -H "Accept: application/vnd.github.v3+json" \
+         https://api.github.com/repos/${repoFullName}`
 
     await exec.exec('bash', ['-c', curlCommand], {
       listeners: {
@@ -137,32 +143,40 @@ async function getRepositoryNodeId() {
     })
 
     const repoData = JSON.parse(output)
-    return repoData.node_id || 'NA'
+    return {
+      id: repoData.id?.toString() || 'NA',
+      node_id: repoData.node_id || 'NA'
+    }
   } catch (error) {
-    core.warning('Unable to get repository node ID, using NA')
-    return 'NA'
+    core.warning(`Unable to get repository data: ${error}`)
+    return { id: 'NA', node_id: 'NA' }
   }
 }
 
 /**
  * Get organization node ID from GitHub API
- * @returns {Promise<string>} Organization node ID or 'NA' if not available
+ * @returns {Promise<object>} Organization data with id and node_id
  */
-async function getOrganizationNodeId() {
+async function getOrganizationData() {
   try {
     const repoFullName = process.env.GITHUB_REPOSITORY
     const token = process.env.GITHUB_TOKEN
 
-    if (!repoFullName || !token) {
-      core.warning('GITHUB_REPOSITORY or GITHUB_TOKEN not available')
-      return 'NA'
+    if (!repoFullName) {
+      core.warning('GITHUB_REPOSITORY not available')
+      return { id: 'NA', node_id: 'NA' }
     }
 
     const owner = repoFullName.split('/')[0]
     let output = ''
-    const curlCommand = `curl -s -H "Authorization: Bearer ${token}" \
-      -H "Accept: application/vnd.github.v3+json" \
-      https://api.github.com/users/${owner}`
+    const authToken = token || process.env.ACTIONS_RUNTIME_TOKEN
+
+    const curlCommand = authToken
+      ? `curl -s -H "Authorization: Bearer ${authToken}" \
+         -H "Accept: application/vnd.github.v3+json" \
+         https://api.github.com/users/${owner}`
+      : `curl -s -H "Accept: application/vnd.github.v3+json" \
+         https://api.github.com/users/${owner}`
 
     await exec.exec('bash', ['-c', curlCommand], {
       listeners: {
@@ -174,10 +188,13 @@ async function getOrganizationNodeId() {
     })
 
     const orgData = JSON.parse(output)
-    return orgData.node_id || 'NA'
+    return {
+      id: orgData.id?.toString() || 'NA',
+      node_id: orgData.node_id || 'NA'
+    }
   } catch (error) {
-    core.warning('Unable to get organization node ID, using NA')
-    return 'NA'
+    core.warning(`Unable to get organization data: ${error}`)
+    return { id: 'NA', node_id: 'NA' }
   }
 }
 
@@ -200,15 +217,17 @@ export async function postSbom(sbomPath, endpointUrl, srmToken, trackRelease) {
     // Get repository information
     const repositoryName = getRepositoryName()
     const organizationName = getOrganizationName()
-    const repositoryNodeId = await getRepositoryNodeId()
-    const organizationNodeId = await getOrganizationNodeId()
+    const repoData = await getRepositoryData()
+    const orgData = await getOrganizationData()
 
     core.info(`Git commit: ${commitSha}`)
     core.info(`Git branch: ${refBranch}`)
     core.info(`Release ID: ${extReleaseId}`)
     core.info(`Repository: ${organizationName}/${repositoryName}`)
-    core.info(`Repository Node ID: ${repositoryNodeId}`)
-    core.info(`Organization Node ID: ${organizationNodeId}`)
+    core.info(`Repository ID: ${repoData.id}`)
+    core.info(`Repository Node ID: ${repoData.node_id}`)
+    core.info(`Organization ID: ${orgData.id}`)
+    core.info(`Organization Node ID: ${orgData.node_id}`)
 
     const curlCommand = `curl -X POST "${endpointUrl}" \
       -H "Authorization: Bearer ${srmToken}" \
@@ -220,8 +239,10 @@ export async function postSbom(sbomPath, endpointUrl, srmToken, trackRelease) {
       -F "track_release=${trackRelease}" \
       -F "repository_name=${repositoryName}" \
       -F "organization_name=${organizationName}" \
-      -F "repository_node_id=${repositoryNodeId}" \
-      -F "organization_node_id=${organizationNodeId}" \
+      -F "repository_id=${repoData.id}" \
+      -F "organization_id=${orgData.id}" \
+      -F "repository_node_id=${repoData.node_id}" \
+      -F "organization_node_id=${orgData.node_id}" \
       -F "sbomType=CDX_JSON" \
       -w "%{http_code}" \
       -s -o /dev/null`
