@@ -12,7 +12,6 @@ name: Check Transpiled JavaScript
 on:
   workflow_dispatch:
 
-
 permissions:
   contents: read
 

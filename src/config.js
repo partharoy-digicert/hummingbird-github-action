@@ -4,7 +4,11 @@
 export const config = {
   // API endpoint for posting SBOM
   endpointUrl:
-    'https://reblown-concurrently-trisha.ngrok-free.dev/api/v1/sbom/upload',
+    'https://reblown-concurrently-trisha.ngrok-free.dev/releasemonitor/api/v1/github-actions/send',
+
+  // Token validation endpoint
+  validationEndpoint:
+    'https://reblown-concurrently-trisha.ngrok-free.dev/releasemonitor/api/v1/github-actions/validate',
 
   // Artifact name for uploaded SBOM
   artifactName: 'sbom-cdxgen',
